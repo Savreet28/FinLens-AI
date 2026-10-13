@@ -1,0 +1,18 @@
+# Python
+backend/venv/
+__pycache__/
+*.pyc
+
+# Secrets — never commit API keys
+.env
+
+# Generated at runtime
+backend/data/uploads/
+backend/data/chroma/
+
+# Node
+node_modules/
+dist/
+
+# macOS
+.DS_Store

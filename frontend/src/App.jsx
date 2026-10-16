@@ -3,6 +3,8 @@ import UploadPanel from './components/UploadPanel'
 import QuestionForm from './components/QuestionForm'
 import AnswerCard from './components/AnswerCard'
 import EvidenceList from './components/EvidenceList'
+import { uploadDocument } from './api'
+
 
 // Temporary fake data — replaced by the real API response in Phase 7/8
 const PLACEHOLDER_RESULT = {
@@ -15,7 +17,32 @@ const PLACEHOLDER_RESULT = {
 }
 
 function App() {
-  const [files, setFiles] = useState([])
+    const [documents, setDocuments] = useState([])
+
+  // Change one document's fields (e.g. its status) by name
+  function updateDocument(name, changes) {
+    setDocuments((prev) =>
+      prev.map((doc) => (doc.name === name ? { ...doc, ...changes } : doc))
+    )
+  }
+
+  // Upload each selected file to FastAPI, one at a time
+  async function handleFilesSelected(selectedFiles) {
+    for (const file of selectedFiles) {
+      // Show the file immediately as "uploading" (replace an older entry with the same name)
+      setDocuments((prev) => [
+        ...prev.filter((doc) => doc.name !== file.name),
+        { name: file.name, status: 'uploading' },
+      ])
+
+      try {
+        const data = await uploadDocument(file)
+        updateDocument(file.name, { status: 'done', pages: data.pages_with_text })
+      } catch (error) {
+        updateDocument(file.name, { status: 'error', message: error.message })
+      }
+    }
+  }
   const [question, setQuestion] = useState('')
   const [result, setResult] = useState(null)
 
@@ -35,7 +62,7 @@ function App() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-        <UploadPanel files={files} onFilesChange={setFiles} />
+                <UploadPanel documents={documents} onFilesSelected={handleFilesSelected} />
 
         <QuestionForm
           question={question}

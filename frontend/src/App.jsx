@@ -37,7 +37,12 @@ function App() {
 
       try {
         const data = await uploadDocument(file)
-        updateDocument(file.name, { status: 'done', pages: data.pages_with_text })
+
+                updateDocument(file.name, {
+          status: 'done',
+          pages: data.pages_with_text,
+          chunks: data.chunks,
+        })
       } catch (error) {
         updateDocument(file.name, { status: 'error', message: error.message })
       }

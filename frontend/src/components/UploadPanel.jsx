@@ -29,7 +29,8 @@ function UploadPanel({ documents, onFilesSelected }) {
               )}
               {doc.status === 'done' && (
                 <span className="text-green-700">
-                  ✓ {doc.name} — {doc.pages} pages extracted
+
+                  {doc.name} — {doc.pages} pages, {doc.chunks} chunks
                 </span>
               )}
               {doc.status === 'error' && (

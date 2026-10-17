@@ -44,3 +44,31 @@ def store_chunks(chunks):
     )
 
     return len(chunks)
+
+def search_chunks(question, top_k=5):
+    """Find the top_k chunks whose meaning is closest to the question."""
+    # 1. Turn the question into a vector (same model as the chunks!)
+    question_embedding = embed_texts([question])[0]
+
+    # 2. Ask ChromaDB for the nearest chunk vectors
+    collection = get_collection()
+    results = collection.query(
+        query_embeddings=[question_embedding],
+        n_results=top_k,
+    )
+
+    # 3. Chroma returns one inner list per question; we sent one question → [0]
+    matches = []
+    for text, metadata, distance in zip(
+        results["documents"][0],
+        results["metadatas"][0],
+        results["distances"][0],
+    ):
+        matches.append({
+            "text": text,
+            "document": metadata["document"],
+            "page": metadata["page"],
+            "distance": round(distance, 3),
+        })
+
+    return matches

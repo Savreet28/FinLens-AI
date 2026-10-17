@@ -25,12 +25,11 @@ function UploadPanel({ documents, onFilesSelected }) {
           {documents.map((doc) => (
             <li key={doc.name} className="text-sm">
               {doc.status === 'uploading' && (
-                <span className="text-slate-500">⏳ {doc.name} — processing...</span>
+                <span className="text-slate-500">⏳ {doc.name} — extracting, chunking & embedding...</span>
               )}
               {doc.status === 'done' && (
                 <span className="text-green-700">
-
-                  {doc.name} — {doc.pages} pages, {doc.chunks} chunks
+                  ✓ {doc.name} — {doc.pages} pages, {doc.chunks} chunks indexed
                 </span>
               )}
               {doc.status === 'error' && (

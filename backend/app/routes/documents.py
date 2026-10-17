@@ -32,7 +32,7 @@ def upload_document(file: UploadFile = File(...)):
         file_path.unlink(missing_ok=True)  # delete the bad file
         raise HTTPException(status_code=400, detail=str(error))
 
-        # 4. Split the pages into overlapping chunks (stored in Phase 5)
+    # 4. Split the pages into overlapping chunks (stored in Phase 5)
     chunks = chunk_pages(pages, safe_name)
 
     # 5. Return a short summary

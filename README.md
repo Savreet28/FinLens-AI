@@ -6,7 +6,7 @@ Upload financial PDFs, ask a question, and get an answer backed by evidence and 
 
 **Stack:** React + Vite + Tailwind · FastAPI · PyMuPDF · OpenAI · ChromaDB
 
-🚧 Work in progress — currently: backend skeleton + frontend layout (placeholder data).
+Work in progress — currently: backend skeleton + frontend layout (placeholder data).
 
 how to run - 
 

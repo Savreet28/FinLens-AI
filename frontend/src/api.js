@@ -1,28 +1,35 @@
 const API_BASE_URL = 'http://127.0.0.1:8000'
 
-export async function uploadDocument(file) {
-  // Pack the file the same way an HTML form would
-  const formData = new FormData()
-  formData.append('file', file)
-
+// Shared helper: send a request, return the JSON, or throw a readable error
+async function request(path, options) {
   let response
   try {
-    response = await fetch(`${API_BASE_URL}/api/documents/upload`, {
-      method: 'POST',
-      body: formData,
-    })
+    response = await fetch(`${API_BASE_URL}${path}`, options)
   } catch {
-    // fetch only throws when the server can't be reached at all
     throw new Error('Could not reach the server. Is the backend running?')
   }
 
-  // Read the JSON body (fall back to {} if the body isn't JSON)
   const data = await response.json().catch(() => ({}))
 
   if (!response.ok) {
-    const message = typeof data.detail === 'string' ? data.detail : 'Upload failed.'
-    throw new Error(message)
+    if (typeof data.detail === 'string') throw new Error(data.detail)
+    if (Array.isArray(data.detail)) throw new Error(data.detail[0].msg) // 422 validation errors
+    throw new Error('Something went wrong. Please try again.')
   }
 
   return data
+}
+
+export function uploadDocument(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request('/api/documents/upload', { method: 'POST', body: formData })
+}
+
+export function researchQuestion(question) {
+  return request('/api/research', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question }),
+  })
 }

@@ -11,6 +11,11 @@ function EvidenceList({ sources }) {
               <span className="ml-2 text-slate-500 font-normal">
                 Page {source.page}
               </span>
+              {source.distance !== undefined && (
+                <span className="ml-2 text-xs text-slate-400 font-normal">
+                  match {(1 - source.distance).toFixed(2)}
+                </span>
+              )}
             </p>
             <p className="mt-1 text-sm text-slate-600 italic">
               "{source.text}"

@@ -1,6 +1,13 @@
 import chromadb
 
-from app.config import CHROMA_DIR, COLLECTION_NAME, EMBEDDING_MODEL, get_openai_client
+from app.config import (
+    CHROMA_DIR,
+    COLLECTION_NAME,
+    EMBEDDING_MODEL,
+    MAX_DISTANCE,
+    TOP_K,
+    get_openai_client,
+)
 
 BATCH_SIZE = 100  # how many texts to send to OpenAI in one request
 
@@ -72,3 +79,14 @@ def search_chunks(question, top_k=5):
         })
 
     return matches
+
+
+def count_chunks():
+    """How many chunks are stored in total (0 means nothing uploaded yet)."""
+    return get_collection().count()
+
+
+def retrieve_relevant_chunks(question, top_k=TOP_K, max_distance=MAX_DISTANCE):
+    """Search for the closest chunks, then keep only the ones close enough."""
+    matches = search_chunks(question, top_k)
+    return [match for match in matches if match["distance"] <= max_distance]

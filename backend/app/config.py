@@ -12,6 +12,9 @@ EMBEDDING_MODEL = "text-embedding-3-small"
 
 CHROMA_DIR = "data/chroma"
 COLLECTION_NAME = "financial_documents"
+# Retrieval settings
+TOP_K = 5            # how many chunks to retrieve for each question
+MAX_DISTANCE = 0.75  # chunks farther than this are treated as "not relevant"
 
 
 def get_openai_client():

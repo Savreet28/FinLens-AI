@@ -1,0 +1,39 @@
+import openai
+from fastapi import APIRouter, HTTPException
+
+from app.errors import ai_error_to_http
+from app.schemas import ResearchRequest, ResearchResponse
+from app.services.vector_store import count_chunks, retrieve_relevant_chunks
+
+router = APIRouter(prefix="/api", tags=["research"])
+
+NOT_FOUND_MESSAGE = (
+    "I could not find enough relevant information in your uploaded "
+    "documents to answer this question."
+)
+
+
+@router.post("/research", response_model=ResearchResponse)
+def research(request: ResearchRequest):
+    # 1. There must be at least one indexed document
+    if count_chunks() == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="No documents uploaded yet. Please upload a PDF first.",
+        )
+
+    # 2. Retrieve the chunks that are close enough to the question
+    try:
+        sources = retrieve_relevant_chunks(request.question)
+    except (RuntimeError, openai.APIError) as error:
+        raise ai_error_to_http(error)
+
+    # 3. Nothing relevant → say so honestly (no guessing)
+    if not sources:
+        return {"answer": NOT_FOUND_MESSAGE, "sources": []}
+
+    # 4. For now, return the evidence only (the AI answer arrives in Phase 7)
+    return {
+        "answer": f"Found {len(sources)} relevant passages. (AI-generated answer coming in Phase 7.)",
+        "sources": sources,
+    }

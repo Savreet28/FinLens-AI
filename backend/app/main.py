@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import documents
+from app.routes import documents, research
 
 # Create the FastAPI application
 app = FastAPI(title="FinLens-AI API")
@@ -16,6 +16,7 @@ app.add_middleware(
 
 # Add the document routes (/api/documents/...)
 app.include_router(documents.router)
+app.include_router(research.router)
 
 
 @app.get("/")

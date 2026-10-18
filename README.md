@@ -1,4 +1,4 @@
-# FinLens-AI
+# FinLens-AI -
 
 AI Financial Research & Evidence Assistant — a document-grounded financial Q&A app built with RAG (Retrieval-Augmented Generation).
 

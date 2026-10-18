@@ -9,6 +9,7 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 EMBEDDING_MODEL = "text-embedding-3-small"
+CHAT_MODEL = "gpt-5.4-mini"
 
 CHROMA_DIR = "data/chroma"
 COLLECTION_NAME = "financial_documents"

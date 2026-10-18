@@ -8,5 +8,4 @@ function AnswerCard({ answer }) {
     </section>
   )
 }
-
 export default AnswerCard

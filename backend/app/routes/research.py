@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException
 from app.errors import ai_error_to_http
 from app.schemas import ResearchRequest, ResearchResponse
 from app.services.vector_store import count_chunks, retrieve_relevant_chunks
+from app.services.rag_service import generate_answer
 
 router = APIRouter(prefix="/api", tags=["research"])
 
@@ -32,8 +33,10 @@ def research(request: ResearchRequest):
     if not sources:
         return {"answer": NOT_FOUND_MESSAGE, "sources": []}
 
-    # 4. For now, return the evidence only (the AI answer arrives in Phase 7)
-    return {
-        "answer": f"Found {len(sources)} relevant passages. (AI-generated answer coming in Phase 7.)",
-        "sources": sources,
-    }
+    # 4. Generate a grounded answer from the evidence
+    try:
+        answer = generate_answer(request.question, sources)
+    except (RuntimeError, openai.APIError) as error:
+        raise ai_error_to_http(error)
+
+    return {"answer": answer, "sources": sources}

@@ -1,14 +1,26 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import UploadPanel from './components/UploadPanel'
 import QuestionForm from './components/QuestionForm'
 import AnswerCard from './components/AnswerCard'
 import EvidenceList from './components/EvidenceList'
-import { uploadDocument, researchQuestion } from './api'
+import { getDocuments, uploadDocument, researchQuestion } from './api'
 import MetricsChart from './components/MetricsChart'
 
 function App() {
   // --- Documents ---
   const [documents, setDocuments] = useState([])
+    // On startup, load documents already indexed in ChromaDB (they survive page refreshes)
+  useEffect(() => {
+    getDocuments()
+      .then((indexed) =>
+        setDocuments(
+          indexed.map((doc) => ({ name: doc.document, status: 'done', chunks: doc.chunks }))
+        )
+      )
+      .catch(() => {
+        // Backend not reachable yet: the upload panel simply starts empty
+      })
+  }, [])
 
   // Change one document's fields (e.g. its status) by name
   function updateDocument(name, changes) {
@@ -89,9 +101,10 @@ function App() {
         {result && (
           <>
           <AnswerCard answer={result.answer} found={result.found} />
+          {result.metrics && <MetricsChart metrics={result.metrics} />}
             {result.sources.length > 0 && <EvidenceList sources={result.sources} />}
             
-            {result.metrics && <MetricsChart metrics={result.metrics} />}
+
           </>
         )}
       </main>

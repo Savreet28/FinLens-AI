@@ -6,12 +6,13 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from app.services.pdf_service import extract_pages
 from app.services.chunking_service import chunk_pages
-from app.services.vector_store import store_chunks
+from app.services.vector_store import list_documents, store_chunks
 from app.errors import ai_error_to_http
 
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 
 UPLOAD_DIR = Path("data/uploads")
+MAX_FILE_SIZE_MB = 20
 
 
 @router.post("/upload")
@@ -19,6 +20,12 @@ def upload_document(file: UploadFile = File(...)):
     # 1. Only accept PDF files
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed.")
+        # 1b. Reject very large files (slow and expensive to embed)
+    if file.size is not None and file.size > MAX_FILE_SIZE_MB * 1024 * 1024:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File is too large. Maximum size is {MAX_FILE_SIZE_MB} MB.",
+        )
 
     # 2. Save the file to data/uploads/
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -52,3 +59,8 @@ def upload_document(file: UploadFile = File(...)):
         "characters": sum(len(p["text"]) for p in pages),
         "preview": pages[0]["text"][:300],
     }
+
+@router.get("")
+def get_documents():
+    """List the documents that are already indexed in ChromaDB."""
+    return list_documents()

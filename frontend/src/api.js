@@ -33,3 +33,7 @@ export function researchQuestion(question) {
     body: JSON.stringify({ question }),
   })
 }
+
+export function getDocuments() {
+  return request('/api/documents')
+}

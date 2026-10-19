@@ -38,11 +38,18 @@ def embed_texts(texts):
 
 
 def store_chunks(chunks):
-    """Embed chunks and save them (vector + text + metadata) in ChromaDB."""
+    """Embed chunks and save them in ChromaDB, replacing any old version of the document."""
     texts = [chunk["text"] for chunk in chunks]
+    document_name = chunks[0]["metadata"]["document"]
+
+    # 1. Embed first: if OpenAI fails, the old version stays untouched
     embeddings = embed_texts(texts)
 
+    # 2. Remove every old chunk of this document (avoids stale chunks)
     collection = get_collection()
+    collection.delete(where={"document": document_name})
+
+    # 3. Store the new chunks
     collection.upsert(
         ids=[chunk["id"] for chunk in chunks],
         embeddings=embeddings,
@@ -90,3 +97,17 @@ def retrieve_relevant_chunks(question, top_k=TOP_K, max_distance=MAX_DISTANCE):
     """Search for the closest chunks, then keep only the ones close enough."""
     matches = search_chunks(question, top_k)
     return [match for match in matches if match["distance"] <= max_distance]
+
+def list_documents():
+    """Return each indexed document with its number of chunks."""
+    records = get_collection().get(include=["metadatas"])
+
+    counts = {}
+    for metadata in records["metadatas"]:
+        name = metadata["document"]
+        counts[name] = counts.get(name, 0) + 1
+
+    return [
+        {"document": name, "chunks": count}
+        for name, count in sorted(counts.items())
+    ]

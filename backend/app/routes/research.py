@@ -5,6 +5,7 @@ from app.errors import ai_error_to_http
 from app.schemas import ResearchRequest, ResearchResponse
 from app.services.vector_store import count_chunks, retrieve_relevant_chunks
 from app.services.rag_service import extract_citations, generate_answer, is_insufficient
+from app.services.metrics_service import extract_metrics
 
 router = APIRouter(prefix="/api", tags=["research"])
 
@@ -50,4 +51,11 @@ def research(request: ResearchRequest):
         source["number"] = number
         source["cited"] = number in cited_numbers
 
-    return {"answer": answer, "found": True, "sources": sources}
+    # 7. Optional: structured numbers for a chart (never blocks the answer)
+    try:
+        metrics = extract_metrics(request.question, sources)
+    except Exception as error:
+        print(f"Metrics extraction failed: {error}")
+        metrics = None
+
+    return {"answer": answer, "found": True, "sources": sources, "metrics": metrics}

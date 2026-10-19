@@ -1,5 +1,17 @@
 from pydantic import BaseModel, ConfigDict, Field
 
+class MetricPoint(BaseModel):
+    """One value of a metric for one period."""
+    period: str   # e.g. "Three months ended July 27, 2025"
+    value: float  # e.g. 46743
+
+
+class FinancialMetrics(BaseModel):
+    """Structured numbers extracted from the evidence (used for the chart)."""
+    has_metrics: bool
+    metric_name: str          # e.g. "Revenue"
+    unit: str                 # e.g. "$ in millions"
+    points: list[MetricPoint]
 
 class ResearchRequest(BaseModel):
     """What React sends: {"question": "..."}"""
@@ -23,3 +35,4 @@ class ResearchResponse(BaseModel):
     answer: str
     found: bool      # False when the documents don't answer the question
     sources: list[Source]
+    metrics: FinancialMetrics | None = None  # only when a chart makes sense

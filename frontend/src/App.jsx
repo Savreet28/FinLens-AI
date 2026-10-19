@@ -4,6 +4,7 @@ import QuestionForm from './components/QuestionForm'
 import AnswerCard from './components/AnswerCard'
 import EvidenceList from './components/EvidenceList'
 import { uploadDocument, researchQuestion } from './api'
+import MetricsChart from './components/MetricsChart'
 
 function App() {
   // --- Documents ---
@@ -89,6 +90,8 @@ function App() {
           <>
           <AnswerCard answer={result.answer} found={result.found} />
             {result.sources.length > 0 && <EvidenceList sources={result.sources} />}
+            
+            {result.metrics && <MetricsChart metrics={result.metrics} />}
           </>
         )}
       </main>

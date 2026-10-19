@@ -87,7 +87,7 @@ function App() {
 
         {result && (
           <>
-            <AnswerCard answer={result.answer} />
+          <AnswerCard answer={result.answer} found={result.found} />
             {result.sources.length > 0 && <EvidenceList sources={result.sources} />}
           </>
         )}

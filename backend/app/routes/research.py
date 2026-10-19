@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from app.errors import ai_error_to_http
 from app.schemas import ResearchRequest, ResearchResponse
 from app.services.vector_store import count_chunks, retrieve_relevant_chunks
-from app.services.rag_service import generate_answer
+from app.services.rag_service import extract_citations, generate_answer, is_insufficient
 
 router = APIRouter(prefix="/api", tags=["research"])
 
@@ -31,7 +31,7 @@ def research(request: ResearchRequest):
 
     # 3. Nothing relevant → say so honestly (no guessing)
     if not sources:
-        return {"answer": NOT_FOUND_MESSAGE, "sources": []}
+            return {"answer": NOT_FOUND_MESSAGE, "found": False, "sources": []}
 
     # 4. Generate a grounded answer from the evidence
     try:
@@ -39,4 +39,15 @@ def research(request: ResearchRequest):
     except (RuntimeError, openai.APIError) as error:
         raise ai_error_to_http(error)
 
-    return {"answer": answer, "sources": sources}
+        # 5. The LLM read the evidence but said it doesn't answer the question
+    if is_insufficient(answer):
+        return {"answer": answer, "found": False, "sources": []}
+
+    # 6. Connect the answer to its sources:
+    #    number them exactly as in the prompt, and mark which ones were cited
+    cited_numbers = extract_citations(answer, len(sources))
+    for number, source in enumerate(sources, start=1):
+        source["number"] = number
+        source["cited"] = number in cited_numbers
+
+    return {"answer": answer, "found": True, "sources": sources}

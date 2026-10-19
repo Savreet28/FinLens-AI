@@ -1,28 +1,55 @@
+// One evidence card (used only inside this file)
+function EvidenceCard({ source }) {
+  return (
+    <div
+      id={`source-${source.number}`}
+      className={`scroll-mt-6 rounded-lg border p-4 ${
+        source.cited ? 'border-blue-200 bg-blue-50' : 'border-slate-200 opacity-70'
+      }`}
+    >
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span className="rounded bg-blue-100 px-1.5 text-xs font-semibold text-blue-700">
+          {source.number}
+        </span>
+        <span className="font-medium text-slate-900">{source.document}</span>
+        <span className="text-slate-500">Page {source.page}</span>
+        <span className="text-xs text-slate-400">
+          match {(1 - source.distance).toFixed(2)}
+        </span>
+      </div>
+      <p className="mt-2 text-sm text-slate-600 italic">"{source.text}"</p>
+    </div>
+  )
+}
+
 function EvidenceList({ sources }) {
+  const cited = sources.filter((source) => source.cited)
+  const others = sources.filter((source) => !source.cited)
+
   return (
     <section className="bg-white rounded-xl border border-slate-200 p-6">
       <h2 className="text-lg font-semibold text-slate-900">Evidence</h2>
+      <p className="mt-1 text-sm text-slate-500">
+        Passages from your documents. Numbers match the citations in the answer.
+      </p>
 
-      <div className="mt-4 space-y-4">
-        {sources.map((source, index) => (
-          <div key={index} className="border-l-4 border-slate-300 pl-4">
-            <p className="text-sm font-medium text-slate-900">
-              {source.document}
-              <span className="ml-2 text-slate-500 font-normal">
-                Page {source.page}
-              </span>
-              {source.distance !== undefined && (
-                <span className="ml-2 text-xs text-slate-400 font-normal">
-                  match {(1 - source.distance).toFixed(2)}
-                </span>
-              )}
-            </p>
-            <p className="mt-1 text-sm text-slate-600 italic">
-              "{source.text}"
-            </p>
-          </div>
-        ))}
-      </div>
+      {cited.length > 0 && (
+        <div className="mt-4 space-y-3">
+          <h3 className="text-sm font-semibold text-slate-700">Used in the answer</h3>
+          {cited.map((source) => (
+            <EvidenceCard key={source.number} source={source} />
+          ))}
+        </div>
+      )}
+
+      {others.length > 0 && (
+        <div className="mt-6 space-y-3">
+          <h3 className="text-sm font-semibold text-slate-500">Also retrieved (not cited)</h3>
+          {others.map((source) => (
+            <EvidenceCard key={source.number} source={source} />
+          ))}
+        </div>
+      )}
     </section>
   )
 }

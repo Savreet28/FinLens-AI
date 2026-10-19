@@ -1,5 +1,17 @@
+import { useState } from 'react'
+
+const PREVIEW_LENGTH = 300 // characters shown before "Show more"
+
+
+// One evidence card (used only inside this file)
 // One evidence card (used only inside this file)
 function EvidenceCard({ source }) {
+  const [expanded, setExpanded] = useState(false)
+
+  const isLong = source.text.length > PREVIEW_LENGTH
+  const shownText =
+    expanded || !isLong ? source.text : source.text.slice(0, PREVIEW_LENGTH) + '…'
+
   return (
     <div
       id={`source-${source.number}`}
@@ -11,13 +23,24 @@ function EvidenceCard({ source }) {
         <span className="rounded bg-blue-100 px-1.5 text-xs font-semibold text-blue-700">
           {source.number}
         </span>
-        <span className="font-medium text-slate-900">{source.document}</span>
+        <span className="font-medium text-slate-900 break-all">{source.document}</span>
         <span className="text-slate-500">Page {source.page}</span>
         <span className="text-xs text-slate-400">
           match {(1 - source.distance).toFixed(2)}
         </span>
       </div>
-      <p className="mt-2 text-sm text-slate-600 italic">"{source.text}"</p>
+
+      <p className="mt-2 text-sm text-slate-600 italic break-words">"{shownText}"</p>
+
+      {isLong && (
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="mt-1 text-xs font-medium text-blue-700 hover:underline"
+        >
+          {expanded ? 'Show less' : 'Show more'}
+        </button>
+      )}
     </div>
   )
 }

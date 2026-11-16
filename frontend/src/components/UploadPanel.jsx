@@ -1,3 +1,6 @@
+// True only on the live site (set VITE_DEMO_MODE=true in Vercel)
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
+
 function UploadPanel({ documents, onFilesSelected }) {
   function handleChange(event) {
     const selected = Array.from(event.target.files);
@@ -11,17 +14,27 @@ function UploadPanel({ documents, onFilesSelected }) {
         Upload Financial Documents
       </h2>
 
-      <p className="text-sm text-slate-500 mt-1">
-        PDF files only
-      </p>
+      {DEMO_MODE ? (
+        <p className="mt-3 rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800">
+          Live demo: a public sample report (NVIDIA 10-Q) is already loaded, so
+          you can ask questions right away. Uploads are turned off here. Clone
+          the GitHub repo to use your own documents.
+        </p>
+      ) : (
+        <>
+          <p className="text-sm text-slate-500 mt-1">
+            PDF files only
+          </p>
 
-      <input
-        type="file"
-        accept=".pdf"
-        multiple
-        onChange={handleChange}
-        className="mt-4 block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-white hover:file:bg-slate-700"
-      />
+          <input
+            type="file"
+            accept=".pdf"
+            multiple
+            onChange={handleChange}
+            className="mt-4 block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-white hover:file:bg-slate-700"
+          />
+        </>
+      )}
 
       {documents.length === 0 && (
         <p className="mt-4 text-sm text-slate-400">

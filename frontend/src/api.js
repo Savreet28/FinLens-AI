@@ -1,4 +1,5 @@
-const API_BASE_URL = 'http://127.0.0.1:8000'
+// On Vercel, VITE_API_URL is set to the Render backend URL; locally we use the dev server
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
 
 // Shared helper: send a request, return the JSON, or throw a readable error
 async function request(path, options) {

@@ -1,20 +1,32 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import DEMO_MODE, FRONTEND_URL
 from app.routes import documents, research
+from app.services.demo_service import index_demo_documents
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Runs once when the server starts
+    if DEMO_MODE:
+        index_demo_documents()
+    yield  # the server runs while we are "inside" this point
+
 
 # Create the FastAPI application
-app = FastAPI(title="FinLens-AI API")
+app = FastAPI(title="FinLens-AI API", lifespan=lifespan)
 
-# Allow the React dev server to call this API from the browser
+# Only our own frontend may call this API from a browser
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[FRONTEND_URL],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Add the document routes (/api/documents/...)
 app.include_router(documents.router)
 app.include_router(research.router)
 
@@ -26,4 +38,4 @@ def root():
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok"}
+    return {"status": "ok", "demo_mode": DEMO_MODE}

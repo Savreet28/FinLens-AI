@@ -1,6 +1,9 @@
+from datetime import date
+
 import openai
 from fastapi import APIRouter, HTTPException
 
+from app.config import DAILY_QUESTION_LIMIT
 from app.errors import ai_error_to_http
 from app.schemas import ResearchRequest, ResearchResponse
 from app.services.vector_store import count_chunks, retrieve_relevant_chunks
@@ -14,6 +17,23 @@ NOT_FOUND_MESSAGE = (
     "documents to answer this question."
 )
 
+# Simple in-memory counter (resets when the day changes or the server restarts)
+usage = {"day": date.today(), "count": 0}
+
+
+def check_daily_limit():
+    today = date.today()
+    if usage["day"] != today:
+        usage["day"] = today
+        usage["count"] = 0
+
+    if usage["count"] >= DAILY_QUESTION_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail="The live demo has reached its daily question limit. Please try again tomorrow.",
+        )
+    usage["count"] += 1
+
 
 @router.post("/research", response_model=ResearchResponse)
 def research(request: ResearchRequest):
@@ -24,6 +44,9 @@ def research(request: ResearchRequest):
             detail="No documents uploaded yet. Please upload a PDF first.",
         )
 
+    # 1b. Protect the OpenAI budget
+    check_daily_limit()
+
     # 2. Retrieve the chunks that are close enough to the question
     try:
         sources = retrieve_relevant_chunks(request.question)
@@ -32,7 +55,7 @@ def research(request: ResearchRequest):
 
     # 3. Nothing relevant → say so honestly (no guessing)
     if not sources:
-            return {"answer": NOT_FOUND_MESSAGE, "found": False, "sources": []}
+        return {"answer": NOT_FOUND_MESSAGE, "found": False, "sources": []}
 
     # 4. Generate a grounded answer from the evidence
     try:
@@ -40,7 +63,7 @@ def research(request: ResearchRequest):
     except (RuntimeError, openai.APIError) as error:
         raise ai_error_to_http(error)
 
-        # 5. The LLM read the evidence but said it doesn't answer the question
+    # 5. The LLM read the evidence but said it doesn't answer the question
     if is_insufficient(answer):
         return {"answer": answer, "found": False, "sources": []}
 

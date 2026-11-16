@@ -4,6 +4,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
+from app.config import DEMO_MODE
 from app.services.pdf_service import extract_pages
 from app.services.chunking_service import chunk_pages
 from app.services.vector_store import list_documents, store_chunks
@@ -17,10 +18,18 @@ MAX_FILE_SIZE_MB = 20
 
 @router.post("/upload")
 def upload_document(file: UploadFile = File(...)):
+    # 0. The public demo does not accept uploads
+    if DEMO_MODE:
+        raise HTTPException(
+            status_code=403,
+            detail="Uploads are disabled in the live demo. Clone the repo to use your own documents.",
+        )
+
     # 1. Only accept PDF files
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed.")
-        # 1b. Reject very large files (slow and expensive to embed)
+
+    # 1b. Reject very large files (slow and expensive to embed)
     if file.size is not None and file.size > MAX_FILE_SIZE_MB * 1024 * 1024:
         raise HTTPException(
             status_code=413,

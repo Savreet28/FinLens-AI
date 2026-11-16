@@ -6,6 +6,12 @@ FinLens-AI is a Retrieval-Augmented Generation (RAG) application. It does not an
 
 ![FinLens-AI home](docs/screenshots/home.png)
 
+**🔗 Live demo:** https://fin-lens-ai.vercel.app
+
+> The live demo has a public NVIDIA 10-Q report preloaded, and uploads are turned off.
+> The first load can take about 1 minute while the free backend wakes up.
+> To use your own PDFs, run it locally (see Setup below).
+
 ## Features
 
 - **Document upload**: any financial PDF (annual reports, 10-Q/10-K filings, earnings releases). No company-specific logic.

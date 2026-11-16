@@ -1,5 +1,7 @@
 // True only on the live site (set VITE_DEMO_MODE=true in Vercel)
-const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
+// (accepts "true", "TRUE", " true " etc.)
+const DEMO_MODE =
+  String(import.meta.env.VITE_DEMO_MODE ?? '').trim().toLowerCase() === 'true';
 
 function UploadPanel({ documents, onFilesSelected }) {
   function handleChange(event) {
